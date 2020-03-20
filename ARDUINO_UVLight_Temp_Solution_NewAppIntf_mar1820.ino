@@ -60,7 +60,7 @@ void setup() {
   waitingTimeFinished = 0;
   waitingTimeVal = 10000; // ms
 
-  timer1.start(20000);
+  //timer1.start(20000);
 }
 
 void loop() {
@@ -82,6 +82,11 @@ void loop() {
 
   if(controlModeCmd == 1){ // Mode selection
     if(timerStartCmd == 1){
+          if(!waitingTimeFinished){
+          timer1.start(waitingTimeVal); 
+          Serial.println("Start moving..."); 
+          waitingTimeFinished = !waitingTimeFinished;
+        }
       if(timer1.justFinished()){
         Serial.println("Check timer....");  
         relay.ON();
