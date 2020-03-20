@@ -57,7 +57,7 @@ void millisDelay::repeat() {
 void millisDelay::restart() {
   start(mS_delay);
 }
-
+                                                                             
 /**
    Force delay to end now
 */

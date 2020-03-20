@@ -13,7 +13,7 @@ ESP8266WebServer server(80);
 // Instantiate objects
 Relay relay(4);
 PIR pirSensor(5,3,15,13,12,14);
-millisDelay timer;
+millisDelay timer1;
 millisDelay timer2;
 
 
@@ -24,12 +24,6 @@ bool relayStateCmd, relayControlCmd;
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
 
-// Fake signals for testing without the app
-//controlModeCmd = 1;
-//relayStateCmd = 0;
-//timerDurationCmd = 2;
-//timerCancelCmd = 0;
-//timerStartCmd = 1;
 
 void setup() {
   // PIR sensors
@@ -58,17 +52,15 @@ void setup() {
   server.begin();                 
   Serial.println("Server started!");
 
-  // Test timer lib
-  Serial.println(timer.toMillisec(2));
-  delay(3000);
-
-  relay.ON();
-  delay(2000);
-  relay.OFF();
-
+  controlModeCmd = 0;
+  timerStartCmd = 0;
+  timerDurationCmd = 0;
+  
   // Variable initialization
   waitingTimeFinished = 0;
   waitingTimeVal = 10000; // ms
+
+  timer1.start(20000);
 }
 
 void loop() {
@@ -87,35 +79,61 @@ void loop() {
 //  
 //  Serial.print("Timer Start Cmd (timerStartCmd): ");
 //  Serial.println(timerStartCmd);
-  
+
   if(controlModeCmd == 1){ // Mode selection
-    Serial.println("Auto mode with timer enabled!");
     if(timerStartCmd == 1){
-      if(!waitingTimeFinished){
-          timer2.start(waitingTimeVal); 
-          Serial.println("Start moving..."); 
-          delay(2000);
-          waitingTimeFinished = !waitingTimeFinished;
-        }
+      if(timer1.justFinished()){
+        Serial.println("Check timer....");  
+        relay.ON();
+        Serial.println("Turn on relay!");  
+        Serial.println(timer2.toMillisec(timerDurationCmd));                              
+        timer2.start(timer2.toMillisec(timerDurationCmd));
+        }    
       if(timer2.justFinished()){
-          relay.ON();
-          Serial.println("Turn on relay!");
-          delay(5000);
-          timer.start(timer.toMillisec(timerDurationCmd));
+        Serial.println("Timer2 is working...");
+        relay.OFF();
+        Serial.println("Turning off relay!");
         }
-      if(timer.justFinished()){
-          Serial.println("Turn off relay!");
-          relay.OFF();
-        }
-      }
-    else{
-      relay.OFF();
-      Serial.println("Turn off relay");
-      }
+    }
+
+//    Serial.println("Auto mode with timer enabled!");
+//    if(timerStartCmd == 1){
+//      if(!waitingTimeFinished){
+//          timer2.start(waitingTimeVal); 
+//          Serial.println("Start moving..."); 
+//          delay(2000);
+//          waitingTimeFinished = !waitingTimeFinished;
+//        }
+//      if(timer2.justFinished()){
+//          relay.ON();
+//          Serial.println("Turn on relay!");
+//          Serial.print("waitingTimeFinished: ");
+//          Serial.println(waitingTimeFinished);
+//          delay(5000);
+//          if(waitingTimeFinished){
+//              Serial.println("timer to turn off started");
+//              timer1.start(20000);
+//              waitingTimeFinished = !waitingTimeFinished; 
+//              timerStartCmd = 0;
+//            }            
+//        }
+//      if(timer1.justFinished()){
+//        Serial.println("Turning off relay!");
+//        relay.OFF();
+//        
+//        delay(2000);
+//      }
+//    }
+//    else{
+//      relay.OFF();
+//      Serial.println("Turn off relay");
+//      delay(2000);
+//      }
 
     }
   else{ // Mode selection
-    Serial.println("Manual mode enabled!");
+    Serial.println("Manual mode enabled!");      
+    
     if(relayStateCmd == 1){
       relay.ON();
       Serial.println("Turn on relay");
