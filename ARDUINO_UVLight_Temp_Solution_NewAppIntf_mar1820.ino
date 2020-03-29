@@ -78,6 +78,8 @@ void loop() {
 //  Serial.print("Timer Start Cmd (timerStartCmd): ");
 //  Serial.println(timerStartCmd);
 
+
+// How to integrate PIR & Get remaining time of timer & Resume timer
   if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
     if(timerStartCmd == 1){
           if(!waitingTimeFinished){
@@ -98,7 +100,6 @@ void loop() {
         Serial.println("Turning off relay!");
         }
     }
-
   }
   else{ // Mode selection (MANUAL mode selected)
     Serial.println("Manual mode enabled!");      
