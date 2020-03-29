@@ -59,12 +59,10 @@ void setup() {
   // Variable initialization
   waitingTimeFinished = 0;
   waitingTimeVal = 10000; // ms
-
-  //timer1.start(20000);
 }
 
 void loop() {
-  server.handleClient();          //To handle the actual incoming of HTTP requests, we need to call the handleClient method on the server object, on the main loop function.
+  server.handleClient();          // Handle the actual incoming of HTTP requests
 //  Serial.print("Control Mode Cmd (controlModeCmd): ");
 //  Serial.println(controlModeCmd);
 //  
@@ -80,7 +78,7 @@ void loop() {
 //  Serial.print("Timer Start Cmd (timerStartCmd): ");
 //  Serial.println(timerStartCmd);
 
-  if(controlModeCmd == 1){ // Mode selection
+  if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
     if(timerStartCmd == 1){
           if(!waitingTimeFinished){
           timer1.start(waitingTimeVal); 
@@ -101,44 +99,9 @@ void loop() {
         }
     }
 
-//    Serial.println("Auto mode with timer enabled!");
-//    if(timerStartCmd == 1){
-//      if(!waitingTimeFinished){
-//          timer2.start(waitingTimeVal); 
-//          Serial.println("Start moving..."); 
-//          delay(2000);
-//          waitingTimeFinished = !waitingTimeFinished;
-//        }
-//      if(timer2.justFinished()){
-//          relay.ON();
-//          Serial.println("Turn on relay!");
-//          Serial.print("waitingTimeFinished: ");
-//          Serial.println(waitingTimeFinished);
-//          delay(5000);
-//          if(waitingTimeFinished){
-//              Serial.println("timer to turn off started");
-//              timer1.start(20000);
-//              waitingTimeFinished = !waitingTimeFinished; 
-//              timerStartCmd = 0;
-//            }            
-//        }
-//      if(timer1.justFinished()){
-//        Serial.println("Turning off relay!");
-//        relay.OFF();
-//        
-//        delay(2000);
-//      }
-//    }
-//    else{
-//      relay.OFF();
-//      Serial.println("Turn off relay");
-//      delay(2000);
-//      }
-
-    }
-  else{ // Mode selection
+  }
+  else{ // Mode selection (MANUAL mode selected)
     Serial.println("Manual mode enabled!");      
-    
     if(relayStateCmd == 1){
       relay.ON();
       Serial.println("Turn on relay");
@@ -147,26 +110,15 @@ void loop() {
       relay.OFF();
       Serial.println("Turn of relay");
       }
-  }
-    
+  }    
 }
-
-    
-//  if(pirSensor.pirCheck()){
-//    Serial.println("Human detected! Shutting down...");
-//    }
-//  else{
-//    Serial.println("No human detected!");
-//    }
-//  if(pirSensor.pirCheck())
-
 
 void handleRootPath() {
   server.send(200, "text/plain", "Connected!");
 }
 
 void handleInit() {
-
+// Reserved! Do nothing!!!
 }
 
 void handleControlCmd(){
