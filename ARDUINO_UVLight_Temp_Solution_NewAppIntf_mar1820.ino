@@ -24,6 +24,7 @@ bool relayStateCmd, relayControlCmd;
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
 
+// Add_waitingTimer_to_Manual_Mode branch
 
 void setup() {
   // PIR sensors
