@@ -28,4 +28,13 @@ void Relay::OFF(){
 void Relay::stateSwitch(bool state){
   digitalWrite(_pin, (state?HIGH:LOW));
   }
+
+bool Relay::stateIsChanged(bool currentState, bool previousState){
+  if(currentState != previousState){
+    return 1;
+    }
+  else{
+    return 0;
+    }
+  }
   

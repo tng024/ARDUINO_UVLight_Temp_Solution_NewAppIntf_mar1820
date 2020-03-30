@@ -16,6 +16,7 @@ class Relay{
     void ON();
     void OFF();
     void stateSwitch(bool state);
+    bool stateIsChanged(bool relayCurrentState, bool relayPreviousState);
 
   private: 
     int _pin;  

@@ -20,7 +20,7 @@ millisDelay timer2;
 // Variable declaration
 unsigned long timerDurationCmd, waitingTimeVal;
 bool controlModeCmd;
-bool relayStateCmd, relayControlCmd; 
+bool relayStateCmd, relayControlCmd, relayPrevStateCmd; 
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
 
@@ -56,6 +56,7 @@ void setup() {
   controlModeCmd = 0;
   timerStartCmd = 0;
   timerDurationCmd = 0;
+  relayPrevStateCmd = 0;
   
   // Variable initialization
   waitingTimeFinished = 0;
@@ -105,6 +106,9 @@ void loop() {
   else{ // Mode selection (MANUAL mode selected)
     Serial.println("Manual mode enabled!");      
     if(relayStateCmd == 1){
+      if(relay.stateIsChanged(relayStateCmd, relayPrevStateCmd)){
+        timer1.start(waitingTimeVal);
+        }
       relay.ON();
       Serial.println("Turn on relay");
       }
@@ -112,6 +116,7 @@ void loop() {
       relay.OFF();
       Serial.println("Turn of relay");
       }
+    relayPrevStateCmd = relayStateCmd;
   }    
 }
 
@@ -120,7 +125,7 @@ void handleRootPath() {
 }
 
 void handleInit() {
-// Reserved! Do nothing!!!
+  // Reserved! Do nothing!!!
 }
 
 void handleControlCmd(){
