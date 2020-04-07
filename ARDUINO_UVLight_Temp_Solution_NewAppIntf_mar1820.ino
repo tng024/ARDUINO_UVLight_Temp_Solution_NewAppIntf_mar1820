@@ -24,6 +24,7 @@ bool relayStateCmd, relayControlCmd, relayPrevStateCmd;
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
 
+
 // Add_waitingTimer_to_Manual_Mode branch
 
 void setup() {
@@ -35,7 +36,7 @@ void setup() {
   relay.initialize();
 
   // Start serial comm. - Debug tool
-  Serial.begin(115200);           
+  Serial.begin(9600);           
 
   // Configure NODEMCU as Access Point
   Serial.print("Configuring access point...");
@@ -53,7 +54,14 @@ void setup() {
   server.begin();                 
   Serial.println("Server started!");
 
-  controlModeCmd = 0;
+//  // To test with app 
+//  controlModeCmd = 0;
+//  timerStartCmd = 0;
+//  timerDurationCmd = 0;
+//  relayPrevStateCmd = 0;
+
+  // To test with no app available
+  controlModeCmd = 0; // 
   timerStartCmd = 0;
   timerDurationCmd = 0;
   relayPrevStateCmd = 0;
@@ -64,7 +72,10 @@ void setup() {
 }
 
 void loop() {
+//  Must ENABLE server.handleClient() when using APP
   server.handleClient();          // Handle the actual incoming of HTTP requests
+
+
 //  Serial.print("Control Mode Cmd (controlModeCmd): ");
 //  Serial.println(controlModeCmd);
 //  
@@ -80,6 +91,10 @@ void loop() {
 //  Serial.print("Timer Start Cmd (timerStartCmd): ");
 //  Serial.println(timerStartCmd);
 
+// Get command from terminal (To test without app available)
+//  relayControlCmd = Serial.parseInt();
+//  Serial.print("Relay control command: ");
+//  Serial.println(relayControlCmd);
 
 // How to integrate PIR & Get remaining time of timer & Resume timer
   if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
@@ -90,16 +105,16 @@ void loop() {
           waitingTimeFinished = !waitingTimeFinished;
         }
       if(timer1.justFinished()){
-        Serial.println("Check timer....");  
-        relay.ON();
-        Serial.println("Turn on relay!");  
-        Serial.println(timer2.toMillisec(timerDurationCmd));                              
-        timer2.start(timer2.toMillisec(timerDurationCmd));
+          Serial.println("Check timer....");  
+          relay.ON();
+          Serial.println("Turn on relay!");  
+          Serial.println(timer2.toMillisec(timerDurationCmd));                              
+          timer2.start(timer2.toMillisec(timerDurationCmd));
         }    
       if(timer2.justFinished()){
-        Serial.println("Timer2 is working...");
-        relay.OFF();
-        Serial.println("Turning off relay!");
+          Serial.println("Timer2 is working...");
+          relay.OFF();
+          Serial.println("Turning off relay!");
         }
     }
   }
@@ -107,14 +122,14 @@ void loop() {
     Serial.println("Manual mode enabled!");      
     if(relayStateCmd == 1){
       if(relay.stateIsChanged(relayStateCmd, relayPrevStateCmd)){
-        timer1.start(waitingTimeVal);
+          timer1.start(waitingTimeVal);
         }
       relay.ON();
       Serial.println("Turn on relay");
       }
     else{
-      relay.OFF();
-      Serial.println("Turn of relay");
+        relay.OFF();
+        Serial.println("Turn of relay");
       }
     relayPrevStateCmd = relayStateCmd;
   }    
@@ -138,8 +153,7 @@ void handleControlCmd(){
   }
   // relayState
   if (server.hasArg("relayState")) {
-  relayStateCmd = (server.arg("relayState").toInt());
-  //Serial.println(temp);
+  relayStateCmd = (server.arg("relayState").toInt()); // Enable with app
   message += "relayState: ";
   message += server.arg("relayState");
   }
