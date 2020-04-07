@@ -32,7 +32,7 @@ void PIR::configuration(){
   pinMode(_pin6, INPUT);
   };
 
-bool PIR::pirCheck(){
+bool PIR::humanPresenceCheck(){
   pin_state_1 = digitalRead(_pin1);
   pin_state_2 = digitalRead(_pin2);
   pin_state_3 = digitalRead(_pin3);

@@ -18,7 +18,7 @@ class PIR{
   public:
     PIR(uint8_t pin1,uint8_t pin2,uint8_t pin3,uint8_t pin4,uint8_t pin5,uint8_t pin6);
     void configuration();
-    bool pirCheck();
+    bool humanPresenceCheck();
     
   private:
     uint8_t _pin1;

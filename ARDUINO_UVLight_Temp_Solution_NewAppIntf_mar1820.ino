@@ -12,7 +12,7 @@ ESP8266WebServer server(80);
 
 // Instantiate objects
 Relay relay(4);
-PIR pirSensor(5,3,15,13,12,14);
+PIR pir(5,3,15,13,12,14);
 millisDelay timer1;
 millisDelay timer2;
 
@@ -23,14 +23,15 @@ bool controlModeCmd;
 bool relayStateCmd, relayControlCmd, relayPrevStateCmd; 
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
+bool humanIsAround;
 
 
 // Add_waitingTimer_to_Manual_Mode branch
 
 void setup() {
   // PIR sensors
-  pirSensor.configuration();
-  pirSensor.pirCheck();
+  pir.configuration();
+  pir.humanPresenceCheck();
 
   // Relay
   relay.initialize();
@@ -54,17 +55,18 @@ void setup() {
   server.begin();                 
   Serial.println("Server started!");
 
-//  // To test with app 
-//  controlModeCmd = 0;
-//  timerStartCmd = 0;
-//  timerDurationCmd = 0;
-//  relayPrevStateCmd = 0;
-
-  // To test with no app available
-  controlModeCmd = 0; // 
+  // To test with app 
+  controlModeCmd = 0;
   timerStartCmd = 0;
   timerDurationCmd = 0;
   relayPrevStateCmd = 0;
+  humanIsAround = 0;
+
+//  // To test with no app available
+//  controlModeCmd = 0; 
+//  timerStartCmd = 0;
+//  timerDurationCmd = 0;
+//  relayPrevStateCmd = 0;
   
   // Variable initialization
   waitingTimeFinished = 0;
@@ -74,7 +76,6 @@ void setup() {
 void loop() {
 //  Must ENABLE server.handleClient() when using APP
   server.handleClient();          // Handle the actual incoming of HTTP requests
-
 
 //  Serial.print("Control Mode Cmd (controlModeCmd): ");
 //  Serial.println(controlModeCmd);
@@ -97,6 +98,9 @@ void loop() {
 //  Serial.println(relayControlCmd);
 
 // How to integrate PIR & Get remaining time of timer & Resume timer
+// Check PIR sensor status
+  humanIsAround = pir.humanPresenceCheck();
+  
   if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
     if(timerStartCmd == 1){
           if(!waitingTimeFinished){
@@ -144,42 +148,42 @@ void handleInit() {
 }
 
 void handleControlCmd(){
-  String message = "Initialization with: ";
+  String message = "Feedback command signal from Arduino: ";
   // controlMode
   if (server.hasArg("controlMode")) {
-  controlModeCmd = (server.arg("controlMode").toInt());
-  message += "controlMode: ";
-  message += server.arg("controlMode");
+    controlModeCmd = (server.arg("controlMode").toInt());
+    message += "controlMode: ";
+    message += server.arg("controlMode");
   }
   // relayState
   if (server.hasArg("relayState")) {
-  relayStateCmd = (server.arg("relayState").toInt()); // Enable with app
-  message += "relayState: ";
-  message += server.arg("relayState");
+    relayStateCmd = (server.arg("relayState").toInt()); 
+    message += "relayState: ";
+    message += server.arg("relayState");
   }
   // timerDuration
   if (server.hasArg("timerDuration")) {
-  timerDurationCmd = (server.arg("timerDuration").toInt());
-  message += "timerDuration: ";
-  message += server.arg("timerDuration");
+    timerDurationCmd = (server.arg("timerDuration").toInt());
+    message += "timerDuration: ";
+    message += server.arg("timerDuration");
   }
   //timerCancel
   if (server.hasArg("timerCancel")) {
-  timerCancelCmd = (server.arg("Cancel").toInt());
-  message += "timerCancel: ";
-  message += server.arg("timerCancel");
+    timerCancelCmd = (server.arg("Cancel").toInt());
+    message += "timerCancel: ";
+    message += server.arg("timerCancel");
   }
   //timerStart
   if (server.hasArg("timerStart")) {
-  timerStartCmd = (server.arg("timerStart").toInt());
-  message += "timerStart: ";
-  message += server.arg("timerStart");
+    timerStartCmd = (server.arg("timerStart").toInt());
+    message += "timerStart: ";
+    message += server.arg("timerStart");
   }
   //timerFinished
   if (server.hasArg("timerFinished")) {
-  waitingTimeFinished = (server.arg("timerFinished").toInt());
-  message += "timerFinished: ";
-  message += server.arg("timerFinished");
+    waitingTimeFinished = (server.arg("timerFinished").toInt());
+    message += "timerFinished: ";
+    message += server.arg("timerFinished");
   }
   server.send(200, "text/plain", message); 
 }
