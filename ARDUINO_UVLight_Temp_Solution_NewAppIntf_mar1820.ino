@@ -23,7 +23,7 @@ bool controlModeCmd;
 bool relayStateCmd, relayControlCmd, relayPrevStateCmd; 
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
-bool humanIsAround;
+bool humanIsAround, call_once;
 bool timer1ResumeRequest, timer2ResumeRequest;
 
 // Add_waitingTimer_to_Manual_Mode branch
@@ -60,6 +60,7 @@ void setup() {
   timerDurationCmd = 0;
   relayPrevStateCmd = 0;
   humanIsAround = 0;
+  call_once = 0;
   timer1ResumeRequest = 0;
   timer2ResumeRequest = 0;
 
@@ -71,7 +72,7 @@ void setup() {
   
   // Variable initialization
   waitingTimeFinished = 0;
-  waitingTimeVal = 10000; // ms
+  waitingTimeVal = 20000; // ms
 }
 
 void loop() {
@@ -104,73 +105,83 @@ void loop() {
 //  Serial.println(humanIsAround);
   
   if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
-    if((timerStartCmd == 1) && (humanIsAround != 1)){
+    if(timerStartCmd == 1){ //&& (humanIsAround != 1)
       if(!waitingTimeFinished){
           timer1.start(waitingTimeVal); 
           Serial.println("Start moving..."); 
           waitingTimeFinished = !waitingTimeFinished;           
         }
-      if(humanIsAround){
+      if((humanIsAround) && (!call_once)){
+          Serial.println("Human detected!!!");
           if(timer1.isRunning()){
               remainingTimer1ValMs = timer1.remaining();
+              Serial.print("timer1 remaining duration: ");
+              Serial.println(remainingTimer1ValMs);
               timer1.stop();
               timer1ResumeRequest = 1;
             }
           if(timer2.isRunning()){
               remainingTimer2ValMs = timer2.remaining(); 
               timer2.stop();
+              Serial.print("timer2 remaining duration: ");
+              Serial.println(remainingTimer2ValMs);
               relay.OFF();
-              Serial.println("Turn off relay - Human detected");   
+              Serial.println("Turned off relay - Human detected");   
               timer2ResumeRequest = 1;        
             }
+          call_once = !call_once;
         }
       if((!humanIsAround) && (timer1ResumeRequest)){
-          timer1ResumeRequest != timer1ResumeRequest;
-          timer1.start(remainingTimer1ValMs);        
+          timer1ResumeRequest = !timer1ResumeRequest;
+          timer1.start(remainingTimer1ValMs);   
+          Serial.println("Resuming waiting timer...");   
+          call_once = !call_once;  
         }
       if((!humanIsAround) && (timer2ResumeRequest)){
-          timer2ResumeRequest != timer2ResumeRequest;
+          timer2ResumeRequest = !timer2ResumeRequest;
           timer2.start(remainingTimer2ValMs);  
           relay.ON();    
           Serial.println("Resuming remained ON time before human detected");  
+          Serial.println("Relay is ON again");
+          call_once = !call_once;
         }
       if(timer1.justFinished()){
-          Serial.println("Check timer....");  
+          Serial.println("3-minutes waiting time is due....");  
           relay.ON();
-          Serial.println("Turn on relay - Auto Mode");  
+          Serial.println("Turned on relay - Auto Mode");  
+          Serial.print("Timer is set to: ");
           Serial.println(timer2.toMillisec(timerDurationCmd));                              
           timer2.start(timer2.toMillisec(timerDurationCmd));
         }    
       if(timer2.justFinished()){
-          Serial.println("Timer2 is working...");
+          Serial.println("Timer2 is due. Turning off relay...");
           relay.OFF();
-          Serial.println("Turning off relay - Auto Mode");
+          Serial.println("Turned off relay - Auto Mode");
         }
     }
   }
-  else{ // Mode selection (MANUAL mode selected)
-//    if(!call_once){
-//      Serial.println("Manual mode enabled!"); 
-//      call_once = true;
-//    }        
+  else{ // Mode selection (MANUAL mode selected)      
     if(relay.stateIsChanged(relayStateCmd, relayPrevStateCmd)){ // Check if control command is changed, then toggle relay
       if((relayStateCmd == 1) && (humanIsAround != 1)){
           timer1.start(waitingTimeVal);
-          Serial.print("Human Detected: ");
+          Serial.print("Human detected: ");
           Serial.println(humanIsAround);
           Serial.println("Start 3-minutes timer...");
+          call_once = 0;
         }
       else{
           relay.OFF();
-          Serial.println("Turn of relay - Manual Mode");
+          call_once = 0;
+          Serial.println("Turned of relay - Manual Mode");
         }      
     }
     else{
-      if(humanIsAround){
+      if(humanIsAround && (!call_once)){
           relay.OFF();
-          Serial.print("Human Detected: ");
+          Serial.print("Human detected: ");
           Serial.println(humanIsAround);
-          Serial.println("Turn off relay - Human Detected - Manual Mode");
+          Serial.println("Turned off relay - Human Detected - Manual Mode");
+          call_once = !call_once;
         }
     }
     if(timer1.justFinished()){
