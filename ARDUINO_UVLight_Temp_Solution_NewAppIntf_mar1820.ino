@@ -13,12 +13,13 @@ ESP8266WebServer server(80);
 // Instantiate objects
 Relay relay(4);
 PIR pir(5);
-millisDelay timer1;
-millisDelay timer2;
+millisDelay timer1; // 3 minutes waiting
+millisDelay timer2; // ON time timer
+millisDelay timer3; // human detected timer
 
 
 // Variable declaration
-unsigned long timerDurationCmd, waitingTimeVal;
+unsigned long timerDurationCmd, waitingTimeVal, remainingTimeMs;
 bool controlModeCmd;
 bool relayStateCmd, relayControlCmd, relayPrevStateCmd; 
 bool timerCancelCmd, timerStartCmd;
@@ -61,7 +62,7 @@ void setup() {
   timerDurationCmd = 0;
   relayPrevStateCmd = 0;
   humanIsAround = 0;
-  call_once = 0;
+//  call_once = 0;
 
 //  // To test with no app available
 //  controlModeCmd = 0; 
@@ -98,18 +99,20 @@ void loop() {
 //  Serial.print("Relay control command: ");
 //  Serial.println(relayControlCmd);
 
-// How to integrate PIR & Get remaining time of timer & Resume timer
 // Check PIR sensor status
   humanIsAround = pir.humanPresenceCheck();
 //  Serial.print("Human Detected: ");
 //  Serial.println(humanIsAround);
   
   if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
-    if(timerStartCmd == 1){
-          if(!waitingTimeFinished){
+    if((timerStartCmd == 1) && (humanIsAround != 1)){
+      if(!waitingTimeFinished){
           timer1.start(waitingTimeVal); 
           Serial.println("Start moving..."); 
-          waitingTimeFinished = !waitingTimeFinished;
+          waitingTimeFinished = !waitingTimeFinished;           
+        }
+      if(humanIsAround){
+          remainingTimeMs = timer1.remaining();
         }
       if(timer1.justFinished()){
           Serial.println("Check timer....");  
@@ -131,9 +134,8 @@ void loop() {
 //      call_once = true;
 //    }        
     if(relay.stateIsChanged(relayStateCmd, relayPrevStateCmd)){ // Check if control command is changed, then toggle relay
-      if((relayStateCmd == 1)&&(humanIsAround != 1)){
+      if((relayStateCmd == 1) && (humanIsAround != 1)){
           timer1.start(waitingTimeVal);
-          //relay.ON();
           Serial.print("Human Detected: ");
           Serial.println(humanIsAround);
           Serial.println("Start 3-minutes timer...");
