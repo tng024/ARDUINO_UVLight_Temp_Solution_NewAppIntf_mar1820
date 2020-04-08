@@ -105,7 +105,7 @@ void loop() {
 //  Serial.println(humanIsAround);
   
   if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
-    if((timerStartCmd == 1){
+    if(timerStartCmd == 1){
           if(!waitingTimeFinished){
           timer1.start(waitingTimeVal); 
           Serial.println("Start moving..."); 
