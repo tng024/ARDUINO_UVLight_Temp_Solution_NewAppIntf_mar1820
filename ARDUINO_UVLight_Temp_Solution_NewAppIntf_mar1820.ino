@@ -11,22 +11,20 @@ const char *password = "yourpassword";
 ESP8266WebServer server(80);    
 
 // Instantiate objects
-Relay relay(4);
-PIR pir(5);
+Relay relay(4); // Pin D2
+PIR pir(5); // Pin D1
 millisDelay timer1; // 3 minutes waiting
 millisDelay timer2; // ON time timer
 millisDelay timer3; // human detected timer
 
-
 // Variable declaration
-unsigned long timerDurationCmd, waitingTimeVal, remainingTimeMs;
+unsigned long timerDurationCmd, waitingTimeVal, remainingTimer1ValMs, remainingTimer2ValMs;
 bool controlModeCmd;
 bool relayStateCmd, relayControlCmd, relayPrevStateCmd; 
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
 bool humanIsAround;
-bool call_once;
-
+bool timer1ResumeRequest, timer2ResumeRequest;
 
 // Add_waitingTimer_to_Manual_Mode branch
 
@@ -62,7 +60,8 @@ void setup() {
   timerDurationCmd = 0;
   relayPrevStateCmd = 0;
   humanIsAround = 0;
-//  call_once = 0;
+  timer1ResumeRequest = 0;
+  timer2ResumeRequest = 0;
 
 //  // To test with no app available
 //  controlModeCmd = 0; 
@@ -112,7 +111,28 @@ void loop() {
           waitingTimeFinished = !waitingTimeFinished;           
         }
       if(humanIsAround){
-          remainingTimeMs = timer1.remaining();
+          if(timer1.isRunning()){
+              remainingTimer1ValMs = timer1.remaining();
+              timer1.stop();
+              timer1ResumeRequest = 1;
+            }
+          if(timer2.isRunning()){
+              remainingTimer2ValMs = timer2.remaining(); 
+              timer2.stop();
+              relay.OFF();
+              Serial.println("Turn off relay - Human detected");   
+              timer2ResumeRequest = 1;        
+            }
+        }
+      if((!humanIsAround) && (timer1ResumeRequest)){
+          timer1ResumeRequest != timer1ResumeRequest;
+          timer1.start(remainingTimer1ValMs);        
+        }
+      if((!humanIsAround) && (timer2ResumeRequest)){
+          timer2ResumeRequest != timer2ResumeRequest;
+          timer2.start(remainingTimer2ValMs);  
+          relay.ON();    
+          Serial.println("Resuming remained ON time before human detected");  
         }
       if(timer1.justFinished()){
           Serial.println("Check timer....");  
