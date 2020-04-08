@@ -12,7 +12,7 @@ ESP8266WebServer server(80);
 
 // Instantiate objects
 Relay relay(4);
-PIR pir(5,3,15,13,12,14);
+PIR pir(5);
 millisDelay timer1;
 millisDelay timer2;
 
@@ -24,6 +24,7 @@ bool relayStateCmd, relayControlCmd, relayPrevStateCmd;
 bool timerCancelCmd, timerStartCmd;
 bool waitingTimeFinished;
 bool humanIsAround;
+bool call_once;
 
 
 // Add_waitingTimer_to_Manual_Mode branch
@@ -31,7 +32,6 @@ bool humanIsAround;
 void setup() {
   // PIR sensors
   pir.configuration();
-  pir.humanPresenceCheck();
 
   // Relay
   relay.initialize();
@@ -61,6 +61,7 @@ void setup() {
   timerDurationCmd = 0;
   relayPrevStateCmd = 0;
   humanIsAround = 0;
+  call_once = 0;
 
 //  // To test with no app available
 //  controlModeCmd = 0; 
@@ -100,9 +101,11 @@ void loop() {
 // How to integrate PIR & Get remaining time of timer & Resume timer
 // Check PIR sensor status
   humanIsAround = pir.humanPresenceCheck();
+//  Serial.print("Human Detected: ");
+//  Serial.println(humanIsAround);
   
   if(controlModeCmd == 1){ // Mode selection (AUTO mode selected)
-    if(timerStartCmd == 1){
+    if((timerStartCmd == 1){
           if(!waitingTimeFinished){
           timer1.start(waitingTimeVal); 
           Serial.println("Start moving..."); 
@@ -111,29 +114,46 @@ void loop() {
       if(timer1.justFinished()){
           Serial.println("Check timer....");  
           relay.ON();
-          Serial.println("Turn on relay!");  
+          Serial.println("Turn on relay - Auto Mode");  
           Serial.println(timer2.toMillisec(timerDurationCmd));                              
           timer2.start(timer2.toMillisec(timerDurationCmd));
         }    
       if(timer2.justFinished()){
           Serial.println("Timer2 is working...");
           relay.OFF();
-          Serial.println("Turning off relay!");
+          Serial.println("Turning off relay - Auto Mode");
         }
     }
   }
   else{ // Mode selection (MANUAL mode selected)
-    Serial.println("Manual mode enabled!");      
-    if(relayStateCmd == 1){
-      if(relay.stateIsChanged(relayStateCmd, relayPrevStateCmd)){
+//    if(!call_once){
+//      Serial.println("Manual mode enabled!"); 
+//      call_once = true;
+//    }        
+    if(relay.stateIsChanged(relayStateCmd, relayPrevStateCmd)){ // Check if control command is changed, then toggle relay
+      if((relayStateCmd == 1)&&(humanIsAround != 1)){
           timer1.start(waitingTimeVal);
+          //relay.ON();
+          Serial.print("Human Detected: ");
+          Serial.println(humanIsAround);
+          Serial.println("Start 3-minutes timer...");
         }
-      relay.ON();
-      Serial.println("Turn on relay");
-      }
+      else{
+          relay.OFF();
+          Serial.println("Turn of relay - Manual Mode");
+        }      
+    }
     else{
-        relay.OFF();
-        Serial.println("Turn of relay");
+      if(humanIsAround){
+          relay.OFF();
+          Serial.print("Human Detected: ");
+          Serial.println(humanIsAround);
+          Serial.println("Turn off relay - Human Detected - Manual Mode");
+        }
+    }
+    if(timer1.justFinished()){
+        relay.ON();
+        Serial.println("Turn on relay - Manual Mode");
       }
     relayPrevStateCmd = relayStateCmd;
   }    
