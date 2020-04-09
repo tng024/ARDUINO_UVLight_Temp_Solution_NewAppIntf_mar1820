@@ -149,8 +149,9 @@ void loop() {
           Serial.println("3-minutes waiting time is due....");  
           relay.ON();
           Serial.println("Turned on relay - Auto Mode");  
-          Serial.print("Timer is set to: ");
-          Serial.println(timer2.toMillisec(timerDurationCmd));                              
+          Serial.print("Timer2 is set to: ");
+          Serial.print(timer2.toMillisec(timerDurationCmd));      
+          Serial.print(" ms");                      
           timer2.start(timer2.toMillisec(timerDurationCmd));
         }    
       if(timer2.justFinished()){
